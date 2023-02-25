@@ -21,6 +21,7 @@
 #include "ts3_functions.h"
 #include "plugin.h"
 #include <sstream>
+#include <ShellAPI.h>
 
 static struct TS3Functions ts3Functions;
 
@@ -31,7 +32,7 @@ static struct TS3Functions ts3Functions;
 #define _strcpy(dest, destSize, src) { strncpy(dest, src, destSize-1); (dest)[destSize-1] = '\0'; }
 #endif
 
-#define PLUGIN_API_VERSION 22
+#define PLUGIN_API_VERSION 23
 
 #define PATH_BUFSIZE 512
 #define COMMAND_BUFSIZE 128
@@ -59,12 +60,12 @@ const wchar_t * char_to_wc(const char *c)
 
 void log(const char* message, LogLevel level = LogLevel_DEVEL)
 {
-	ts3Functions.logMessage(message, level, "ReallifeRPG Support",0);
+	ts3Functions.logMessage(message, level, "Panthor Support",0);
 }
 
 void openPanelviaUID(uint64 schid /* serverConnectionHandlerID */, uint64 clientID) {
 	char* uid;
-	char* base = "https://support.realliferpg.de/register/uid?uid=";
+	char* base = "https://support.panthor.de/register/uid?uid=";
 	char url[100];
 	if (ts3Functions.getClientVariableAsString(schid, clientID, CLIENT_UNIQUE_IDENTIFIER, &uid) == ERROR_ok) {
 		strcpy(url, base);
@@ -88,11 +89,15 @@ void copyUIDtoClipboard(uint64 schid /* serverConnectionHandlerID */, uint64 cli
 }
 
 void openPanel() {
-	ShellExecute(0, 0, L"https://support.realliferpg.de/", 0, 0, SW_SHOW);
+	ShellExecute(0, 0, L"https://support.panthor.de/", 0, 0, SW_SHOW);
+}
+
+void move(uint64 schid, uint64 clientID, uint64 channelID) {
+	ts3Functions.requestClientMove(schid, clientID, channelID, "", NULL);
 }
 
 const char* ts3plugin_name() {
-	return "ReallifeRPG Support";
+	return "Panthor Support";
 }
 
 const char* ts3plugin_version() {
@@ -108,7 +113,7 @@ const char* ts3plugin_author() {
 }
 
 const char* ts3plugin_description() {
-    return "ReallifeRPG Support Plugin.";
+    return "Panthor Support Plugin.";
 }
 
 void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
@@ -145,7 +150,7 @@ void ts3plugin_registerPluginID(const char* id) {
 }
 
 const char* ts3plugin_infoTitle() {
-	return "ReallifeRPG Support";
+	return "Panthor Support";
 }
 
 void ts3plugin_infoData(uint64 serverConnectionHandlerID, uint64 id, enum PluginItemType type, char** data) {
@@ -193,13 +198,21 @@ static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, c
 enum {
 	MENU_ID_CLIENT_1 = 1,
 	MENU_ID_CLIENT_2,
+	MENU_ID_CLIENT_3,
+	MENU_ID_CLIENT_4,
+	MENU_ID_CLIENT_5,
+	MENU_ID_CLIENT_6,
 	MENU_ID_GLOBAL_1,
 };
 
 void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
-	BEGIN_CREATE_MENUS(3);  /* IMPORTANT: Number of menu items must be correct! */
+	BEGIN_CREATE_MENUS(7);  /* IMPORTANT: Number of menu items must be correct! */
 	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CLIENT,  MENU_ID_CLIENT_1,  "Profil",  "client_open.png");
 	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CLIENT,  MENU_ID_CLIENT_2,  "UID Kopieren",  "client_copy.png");
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CLIENT,  MENU_ID_CLIENT_3,  "Fertig",  "done.png");
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CLIENT,  MENU_ID_CLIENT_4,  "Bearbeitung",  "edit.png");
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CLIENT,  MENU_ID_CLIENT_5,  "Supportleitung",  "supp.png");
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CLIENT,  MENU_ID_CLIENT_6,  "Admin",  "admin.png");
 	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL,  MENU_ID_GLOBAL_1,  "Panel",  "plugin.png");
 	END_CREATE_MENUS;  /* Includes an assert checking if the number of menu items matched */
 
@@ -225,6 +238,18 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 					break;
 				case MENU_ID_CLIENT_2:
 					copyUIDtoClipboard(serverConnectionHandlerID, selectedItemID);
+					break;
+				case MENU_ID_CLIENT_3:
+					move(serverConnectionHandlerID, selectedItemID, 61);
+					break;
+				case MENU_ID_CLIENT_4:
+					move(serverConnectionHandlerID, selectedItemID, 1187);
+					break;
+				case MENU_ID_CLIENT_5:
+					move(serverConnectionHandlerID, selectedItemID, 56);
+					break;
+				case MENU_ID_CLIENT_6:
+					move(serverConnectionHandlerID, selectedItemID, 51);
 					break;
 				default:
 					break;
